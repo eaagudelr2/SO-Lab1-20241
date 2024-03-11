@@ -1,0 +1,3 @@
+    ./reverse - Lee desde la entrada estándar y escribe en la salida estándar.
+    ./reverse input.txt - Lee desde el archivo input.txt y escribe en la salida estándar.
+    ./reverse input.txt output.txt - Lee desde el archivo input.txt y escribe el contenido invertido en el archivo output.txt.

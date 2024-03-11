@@ -1,11 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#define MAX_LINES 1000
 
 // Función para imprimir un mensaje de error
 void print_error(const char *message) {
@@ -25,16 +20,12 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  // Comprobar si los archivos de entrada y salida son idénticos (hardlinked)
-  if (argc == 3) {
-    struct stat input_stat, output_stat;
-    if (stat(argv[1], &input_stat) == 0 && stat(argv[2], &output_stat) == 0) {
-      if (input_stat.st_ino == output_stat.st_ino) {
-        print_error("reverse: input and output file must differ");
-        return 1;
-      }
-    }
+  // Comprobar si los archivos de entrada y salida son idénticos
+  if (argc == 3 && strcmp(argv[1], argv[2]) == 0) {
+    print_error("reverse: input and output file must differ");
+    return 1;
   }
+
   // Abrir archivo de entrada (stdin si no hay argumentos, argv[1] en otro caso)
   FILE *input = NULL;
   if (argc == 1) {
@@ -42,7 +33,6 @@ int main(int argc, char *argv[]) {
   } else {
     input = fopen(argv[1], "r");
     if (input == NULL) {
-
       fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
       return 1;
     }
@@ -52,32 +42,35 @@ int main(int argc, char *argv[]) {
   FILE *output = (argc <= 1) ? stdout : fopen(argv[2], "w");
   if (output == NULL && argc > 1) {
     fclose(input); // Cerrar el archivo de entrada si la apertura falló
-    fprintf(stderr, "error: cannot open file '%s'\n", argv[2]);
+    fprintf(stderr, "error: cannot open file 'input.txt''%s'\n", argv[2]);
     return 1;
   }
 
   // Leer líneas y revertirlas
-  char *lines[MAX_LINES];
-  int line_count = 0;
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
   while ((read = getline(&line, &len, input)) != -1) {
-    lines[line_count] = strdup(line); // Almacenar la línea en un array
-    if (lines[line_count] == NULL) {
-        perror("strdup");
-        exit(EXIT_FAILURE);
+    // Revertir la línea
+    size_t i = 0, j = read - 2; // Excluir el carácter de nueva línea
+    while (i < j) {
+      char temp = line[i];
+      line[i] = line[j];
+      line[j] = temp;
+      i++;
+      j--;
     }
-    line_count++;
-  }
 
-  // Escribir líneas invertidas en la salida en orden inverso
-  for (int i = line_count - 1; i >= 0; i--) {
-    if (fprintf(output, "%s", lines[i]) < 0) {
-        perror("fprintf");
-        exit(EXIT_FAILURE);
+    // Escribir la línea revertida en la salida
+    if (fprintf(output, "%s", line) < 0) {
+      free(line); // Liberar la memoria asignada
+      fclose(input);
+      if (output != stdout) {
+        fclose(output);
+      }
+      print_error("Error al escribir en la salida");
+      return 1;
     }
-    free(lines[i]); // Liberar la memoria asignada
   }
 
   // Liberar memoria y cerrar archivos
