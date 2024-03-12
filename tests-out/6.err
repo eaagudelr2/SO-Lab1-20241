@@ -1,2 +1,0 @@
-double free or corruption (out)
-./tester/run-tests.sh: line 27:  5562 Aborted                 ./reverse tests/6.in tests-out/6.other
