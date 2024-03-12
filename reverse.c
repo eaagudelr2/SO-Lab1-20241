@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -11,11 +10,6 @@
 void print_error(const char *message) {
   fprintf(stderr, "%s\n", message);
   exit(1);
-}
-
-// Función para manejar el fallo de malloc
-void malloc_failed() {
-  print_error("malloc failed");
 }
 
 int main(int argc, char *argv[]) {
@@ -35,6 +29,7 @@ int main(int argc, char *argv[]) {
       }
     }
   }
+
   // Abrir archivo de entrada (stdin si no hay argumentos, argv[1] en otro caso)
   FILE *input = NULL;
   if (argc == 1) {
@@ -42,14 +37,11 @@ int main(int argc, char *argv[]) {
   } else {
     input = fopen(argv[1], "r");
     if (input == NULL) {
-
-
       fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
       return 1;
     }
   }
-
-  // Abrir archivo de salida (stdout si no hay o un argumento, argv[2] si hay dos argumentos)
+// Abrir archivo de salida (stdout si no hay o un argumento, argv[2] si hay dos argumentos)
   FILE *output = (argc <= 1) ? stdout : fopen(argv[2], "w");
   if (output == NULL && argc > 1) {
     fclose(input); // Cerrar el archivo de entrada si la apertura falló
@@ -57,37 +49,32 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  // Leer líneas y revertirlas
+  // Leer líneas y almacenarlas en un array
   char *lines[MAX_LINES];
   int line_count = 0;
-  char *line = NULL;
-  size_t len = 0;
-  ssize_t read;
-  while ((read = getline(&line, &len, input)) != -1) {
-    lines[line_count] = strdup(line); // Almacenar la línea en un array
+  char line[BUFSIZ];
+  while (fgets(line, sizeof(line), input) != NULL) {
+    lines[line_count] = strdup(line);
     if (lines[line_count] == NULL) {
-        perror("strdup");
-        exit(EXIT_FAILURE);
+      perror("strdup");
+      exit(EXIT_FAILURE);
     }
     line_count++;
   }
 
   // Escribir líneas invertidas en la salida en orden inverso
   for (int i = line_count - 1; i >= 0; i--) {
-    if (fprintf(output, "%s", lines[i]) < 0) {
-        perror("fprintf");
-        exit(EXIT_FAILURE);
-    }
+    fprintf(output, "%s", lines[i]);
     free(lines[i]); // Liberar la memoria asignada
   }
 
-  // Liberar memoria y cerrar archivos
-  free(line);
-  fclose(input);
+  // Cerrar archivos si no son la entrada y la salida estándar
+  if (input != stdin) {
+    fclose(input);
+  }
   if (output != stdout) {
     fclose(output);
   }
 
   return 0;
 }
-
