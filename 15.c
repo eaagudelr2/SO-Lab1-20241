@@ -12,6 +12,12 @@ void print_error(const char *message) {
   exit(1);
 }
 
+// Función para manejar el fallo de malloc
+void malloc_failed() {
+  print_error("malloc failed");
+}
+
+
 int main(int argc, char *argv[]) {
   // Comprobar si hay demasiados argumentos
   if (argc > 3) {
@@ -37,15 +43,12 @@ int main(int argc, char *argv[]) {
   } else {
     input = fopen(argv[1], "r");
     if (input == NULL) {
-<<<<<<< HEAD
-=======
-
->>>>>>> 62efc08 (cambie varias cosas, favor revisar)
       fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
       return 1;
     }
   }
-// Abrir archivo de salida (stdout si no hay o un argumento, argv[2] si hay dos argumentos)
+
+  // Abrir archivo de salida (stdout si no hay o un argumento, argv[2] si hay dos argumentos)
   FILE *output = (argc <= 1) ? stdout : fopen(argv[2], "w");
   if (output == NULL && argc > 1) {
     fclose(input); // Cerrar el archivo de entrada si la apertura falló

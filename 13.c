@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -30,27 +31,31 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // Abrir archivo de entrada (stdin si no hay argumentos, argv[1] en otro caso)
-  FILE *input = NULL;
+  // Abrir archivo de entrada
+  FILE *input;
   if (argc == 1) {
-    input = stdin;
+    input = stdin; // Usar la entrada estándar
   } else {
     input = fopen(argv[1], "r");
     if (input == NULL) {
-<<<<<<< HEAD
-=======
-
->>>>>>> 62efc08 (cambie varias cosas, favor revisar)
       fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
       return 1;
     }
   }
-// Abrir archivo de salida (stdout si no hay o un argumento, argv[2] si hay dos argumentos)
-  FILE *output = (argc <= 1) ? stdout : fopen(argv[2], "w");
-  if (output == NULL && argc > 1) {
-    fclose(input); // Cerrar el archivo de entrada si la apertura falló
-    fprintf(stderr, "error: cannot open file '%s'\n", argv[2]);
-    return 1;
+
+  // Abrir archivo de salida
+  FILE *output;
+  if (argc == 1 || argc == 2) {
+    output = stdout; // Usar la salida estándar
+  } else {
+    output = fopen(argv[2], "w");
+    if (output == NULL) {
+      if (input != stdin) {
+        fclose(input);
+      }
+      fprintf(stderr, "reverse: cannot open file '%s'\n", argv[2]);
+      return 1;
+    }
   }
 
   // Leer líneas y almacenarlas en un array
