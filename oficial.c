@@ -20,7 +20,7 @@ void malloc_failed() {
 
 int main(int argc, char *argv[]) {
   // Comprobar si hay demasiados argumentos
-  if (argc > 3) {
+  if (argc > 3 || argc < 1) {
     print_error("usage: reverse <input> <output>");
     return 1;
   }
@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
       }
     }
   }
+
   // Abrir archivo de entrada (stdin si no hay argumentos, argv[1] en otro caso)
   FILE *input = NULL;
   if (argc == 1) {
@@ -42,15 +43,14 @@ int main(int argc, char *argv[]) {
   } else {
     input = fopen(argv[1], "r");
     if (input == NULL) {
-
       fprintf(stderr, "reverse: cannot open file '%s'\n", argv[1]);
       return 1;
     }
   }
 
   // Abrir archivo de salida (stdout si no hay o un argumento, argv[2] si hay dos argumentos)
-  FILE *output = (argc <= 1) ? stdout : fopen(argv[2], "w");
-  if (output == NULL && argc > 1) {
+  FILE *output = (argc <= 2) ? stdout : fopen(argv[2], "w");
+  if (output == NULL && argc > 2) {
     fclose(input); // Cerrar el archivo de entrada si la apertura falló
     fprintf(stderr, "error: cannot open file '%s'\n", argv[2]);
     return 1;
